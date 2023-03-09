@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common';
+import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
 
 @Injectable()
 export class UsersService {
@@ -34,8 +35,20 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return [];
+  async findAll(roles: ValidRoles[]): Promise<User[]> {
+    if (roles.length === 0)
+      return this.usersRepository.find({
+        //No needed when lazy is added to the relation type
+        // relations:{
+        //   lastUpdatedBy: true
+        // }
+      });
+
+    return this.usersRepository
+      .createQueryBuilder()
+      .andWhere('ARRAY[roles] && ARRAY[:...roles]')
+      .setParameter('roles', roles)
+      .getMany();
   }
 
   async findOne(id: string): Promise<User> {
@@ -65,8 +78,14 @@ export class UsersService {
     return `This action updates a #${id} user`;
   }
 
-  disable(id: string): Promise<User> {
-    throw new Error('disable ser not yet implemented');
+  async disable(id: string, adminUser: User): Promise<User> {
+    const userToBlock = await this.findOneById(id);
+    delete adminUser.password;
+
+    userToBlock.isActive = false;
+    userToBlock.lastUpdatedBy = adminUser;
+
+    return await this.usersRepository.save(userToBlock);
   }
 
   private handleDBErrors(error: any): never {

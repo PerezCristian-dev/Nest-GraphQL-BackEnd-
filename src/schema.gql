@@ -15,9 +15,10 @@ type User {
   email: String!
   roles: [String!]!
   isActive: Boolean!
+  lastUpdatedBy: User
 }
 
-type AuthReponse {
+type AuthResponse {
   token: String!
   user: User!
 }
@@ -25,18 +26,24 @@ type AuthReponse {
 type Query {
   getItems: [Item!]!
   getItem(id: String!): Item!
-  users: [User!]!
+  users(roles: [ValidRoles!] = []): [User!]!
   user(id: ID!): User!
-  revalidate: AuthReponse!
+  revalidate: AuthResponse!
+}
+
+enum ValidRoles {
+  ADMIN
+  USER
+  SUPER_USER
 }
 
 type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID): Item!
-  disableUser(id: ID!): User!
-  signup(userInfo: SignupInput!): AuthReponse!
-  login(userInfo: SigninInput!): AuthReponse!
+  blockUser(id: ID!): User!
+  signup(userInfo: SignupInput!): AuthResponse!
+  login(userInfo: SigninInput!): AuthResponse!
 }
 
 input CreateItemInput {
