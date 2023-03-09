@@ -23,20 +23,26 @@ export class UsersResolver {
   }
 
   @Query(() => User, { name: 'user' })
-  async findOne(@Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
-  @CurrentUser([ValidRoles.ADMIN, ValidRoles.SUPER_USER]) user: User,
+  async findOne(
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+    @CurrentUser([ValidRoles.ADMIN, ValidRoles.SUPER_USER]) user: User,
   ): Promise<User> {
     return this.usersService.findOneById(id);
   }
 
-  // @Mutation(() => User)
-  // updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-  //   return this.usersService.update(updateUserInput.id, updateUserInput);
-  // }
+  @Mutation(() => User, { name: 'updateUser' })
+  updateUser(
+    @Args('updateUserInput') updateUserInput: UpdateUserInput,
+    @CurrentUser([ValidRoles.ADMIN]) user: User,
+  ) {
+    return this.usersService.update(updateUserInput.id, updateUserInput, user);
+  }
 
-  @Mutation(() => User, {name:"blockUser"})
-  async disableUser(@Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
-  @CurrentUser([ValidRoles.ADMIN]) user: User): Promise<User> {
+  @Mutation(() => User, { name: 'blockUser' })
+  async disableUser(
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+    @CurrentUser([ValidRoles.ADMIN]) user: User,
+  ): Promise<User> {
     return await this.usersService.disable(id, user);
   }
 }

@@ -12,6 +12,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common';
 import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Injectable()
 export class UsersService {
@@ -74,8 +75,23 @@ export class UsersService {
     }
   }
 
-  update(id: string, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user`;
+  async update(
+    id: string,
+    updateUserInput: UpdateUserInput,
+    currentUser: User,
+  ): Promise<User> {
+    try {
+      const user = await this.usersRepository.preload({
+        ...updateUserInput,
+        id,
+      });
+
+      user.lastUpdatedBy = currentUser;
+
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
 
   async disable(id: string, adminUser: User): Promise<User> {
