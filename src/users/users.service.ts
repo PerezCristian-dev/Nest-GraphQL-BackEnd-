@@ -1,18 +1,17 @@
-import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { SignupInput } from 'src/auth/dto/inputs/signup.input';
+import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
 import { Repository } from 'typeorm';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
-import { NotFoundException } from '@nestjs/common';
-import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Injectable()
 export class UsersService {

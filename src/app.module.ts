@@ -12,15 +12,25 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+
+    GraphQLModule.forRootAsync({
       driver: ApolloDriver,
-      // debug: false,
-      playground: false,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      plugins:[
-        ApolloServerPluginLandingPageLocalDefault
-      ]
+      imports: [],
+      inject: [],
+      useFactory: async () => ({
+        playground: false,
+        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+        plugins: [ApolloServerPluginLandingPageLocalDefault],
+      }),
     }),
+
+    // GraphQLModule.forRoot<ApolloDriverConfig>({
+    //   driver: ApolloDriver,
+    //   // debug: false,
+    //   playground: false,
+    //   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    //   plugins: [ApolloServerPluginLandingPageLocalDefault],
+    // }),
 
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -28,7 +38,7 @@ import { AuthModule } from './auth/auth.module';
       port: +process.env.DB_PORT,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      database:  process.env.DB_NAME,
+      database: process.env.DB_NAME,
       entities: [],
       synchronize: true,
       autoLoadEntities: true,
