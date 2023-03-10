@@ -47,6 +47,9 @@ type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID): Item!
+
+  """Seeding excecution"""
+  excuteSeed: Boolean!
 }
 
 input SignupInput {
