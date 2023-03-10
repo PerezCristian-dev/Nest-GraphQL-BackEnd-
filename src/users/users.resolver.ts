@@ -1,20 +1,32 @@
-import { UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
-import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
-import { ValidRolesArgs } from './dto/args/roles.arg';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateUserInput } from './dto/create-user.input';
-import { UpdateUserInput } from './dto/update-user.input';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import {
+  Args,
+  ID,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
+import { ItemsService } from 'src/items/items.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ValidRolesArgs } from './dto/args/roles.arg';
+import { UpdateUserInput } from './dto/update-user.input';
+import { User } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 @Resolver(() => User)
 @UseGuards(JwtAuthGuard)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly itemService: ItemsService,
+  ) {}
 
-  @Query(() => [User], { name: 'users' })
+  @Query(() => [User], { name: 'getAllUsers' })
   async findAll(
     @Args() validRoles: ValidRolesArgs,
     @CurrentUser([ValidRoles.ADMIN, ValidRoles.SUPER_USER]) user: User,
@@ -44,5 +56,13 @@ export class UsersResolver {
     @CurrentUser([ValidRoles.ADMIN]) user: User,
   ): Promise<User> {
     return await this.usersService.disable(id, user);
+  }
+
+  @ResolveField(() => Int, { name: 'itemCount' })
+  async itemCount(
+    @CurrentUser([ValidRoles.ADMIN]) adminUser: User,
+    @Parent() user: User,
+  ): Promise<number> {
+    return this.itemService.itemCountByUser(user);
   }
 }
