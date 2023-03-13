@@ -10,12 +10,6 @@ export class SeedResolver {
     description: 'Seeding excecution',
   })
   async excuteSeed(): Promise<boolean> {
-    //Clear DB
-
-    //Create users
-
-    //Create Items
-
     return this.seedService.execute();
   }
 }
